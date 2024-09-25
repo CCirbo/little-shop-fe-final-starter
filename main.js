@@ -11,6 +11,7 @@ const itemsNavButton = document.querySelector("#items-nav")
 const addNewButton = document.querySelector("#add-new-button")
 const showingText = document.querySelector("#showing-text")
 
+
 //Form elements
 const merchantForm = document.querySelector("#new-merchant-form")
 const newMerchantName = document.querySelector("#new-merchant-name")
@@ -234,22 +235,39 @@ function displayMerchantItems(event) {
 
 function getMerchantCoupons(event) {
   let merchantId = event.target.closest("article").id.split('-')[1]
-  console.log("Merchant ID:", merchantId)
+  // console.log("Merchant ID:", merchantId)
 
-  fetchData(`merchants/${merchantId}`)
-  .then(couponData => {
-    console.log("Coupon data from fetch:", couponData)
-    displayMerchantCoupons(couponData);
+  fetchData(`merchants/${merchantId}/coupons`)
+  .then(response => {
+    if (response && response.data) {
+    
+    // console.log("Coupon data from fetch:", couponData)
+    let coupons = response.data;
+    showingText.innerText = `Showing: All Coupons for Merchant #${merchantId}`;
+    hide([addNewButton]);
+    displayMerchantCoupons(coupons);
+  
+  }
   })
+  
 }
 
 function displayMerchantCoupons(coupons) {
   show([couponsView])
   hide([merchantsView, itemsView])
 
-  couponsView.innerHTML = `
-    <p>Coupon data will go here.</p>
-  `
+  couponsView.innerHTML = '';
+  coupons.forEach(coupon => {
+    couponsView.innerHTML += `
+      <article class="coupon" id="coupon-${coupon.id}">
+        <h2>${coupon.attributes.name}</h2>
+        <p>Code: ${coupon.attributes.code}</p>
+        <p>Discount: ${coupon.attributes.percent_off ? coupon.attributes.percent_off + '% off' : '$' + coupon.attributes.dollar_off + ' off'}</p>
+        <p>Status: ${coupon.attributes.active ? 'Active' : 'Inactive'}</p>
+      </article>
+    `;
+  });
+
 }
 
 //Helper Functions
